@@ -4,11 +4,11 @@
   "description": "Simple ts example that collect letters on map",
   "main": "index.js",
   "scripts": {
+    "prepare": "husky",
     "start": "tsc && node dist/index.js",
     "test": "jest",
     "lint": "eslint src/**/*",
-    "lint:fix": "npm run lint -- --fix",
-    "prepare": "husky"
+    "lint:fix": "npm run lint -- --fix"
   },
   "author": "Radenko",
   "license": "ISC",
