@@ -1,9 +1,8 @@
 interface CollectLettersAndPathResult {
-  collectedLetters: string,
-  path: string
+    collectedLetters: string,
+    path: string
 }
 
-export function collectLettersAndPath(map: string[][]): CollectLettersAndPathResult {
-
-  return { collectedLetters: '', path: '' };
+export function collectLettersAndPath(_map: string[]): CollectLettersAndPathResult {
+    return {collectedLetters: '', path: ''};
 }

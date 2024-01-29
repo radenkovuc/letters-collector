@@ -1,11 +1,13 @@
-import { collectLettersAndPath } from './map';
+import {collectLettersAndPath} from './map';
 
 // Example usage:
-const map: string[][] = [
-  ['@', '-', 'G', '-', '+'],
-  [' ', ' ', '|', ' ', '|'],
-  ['+', '-', 'O', '-', 'x'],
-];
+const map: string[] = [
+    "@---A---+",
+    "        |",
+    "x-B-+   C",
+    "    |   |",
+    "    +---+"
+]
 
 const result = collectLettersAndPath(map);
 console.log('Collected Letters:', result.collectedLetters);
