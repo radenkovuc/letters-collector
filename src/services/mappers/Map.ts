@@ -12,7 +12,6 @@ interface InitMapResult {
     startItem: Item
 }
 
-
 export const initMap = (map: string[]): InitMapResult => {
     let startItem: Item | undefined = undefined, endItemExist = false
 
@@ -50,38 +49,64 @@ export const findNextItem = (itemsMap: Item[][], currentItem: Item, lastItem: It
         }
         return findNextItemByDirection(itemsMap, currentItem.position, [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT])
     }
+
+    const {directions, additionalDirections} = findAvailableDirections(currentItem, lastItem)
+    return findNextItemByDirection(itemsMap, currentItem.position, directions, additionalDirections)
+}
+
+interface FindAvailableDirectionsResult {
+    directions: Direction[],
+    additionalDirections: Direction[]
+}
+
+const findAvailableDirections = (currentItem: Item, lastItem: Item): FindAvailableDirectionsResult => {
     //Invalid direction is returning to last item
-    const invalidDirection = getDirection( currentItem.position,lastItem.position)
+    const directionToLastItem = getDirection(currentItem.position, lastItem.position)
+    const currentDirection = getDirection(lastItem.position, currentItem.position)
+
+    let directions: Direction[] = [], additionalDirections: Direction[] = []
 
     switch (currentItem.type) {
-        //if current position is CHARACTER we should check all moves except previous one
-        case ItemType.CHARACTER: {
-            const availableDirections = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT].filter(d => d !== invalidDirection)
-            return findNextItemByDirection(itemsMap, currentItem.position, availableDirections)
-        }
-        case ItemType.TURN: {
-            const direction = getDirection(lastItem.position, currentItem.position)
-            //For TURN item invalid directions are go back ind continue strait
-            const availableDirections = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT]
-                .filter(d => d !== invalidDirection && d !== direction)
-            return findNextItemByDirection(itemsMap, currentItem.position, availableDirections)
+        case ItemType.CHARACTER:
+            if (currentDirection === Direction.RIGHT || currentDirection === Direction.LEFT) {
+                directions = [Direction.LEFT, Direction.RIGHT].filter(d => d !== directionToLastItem)
+                additionalDirections = [Direction.UP, Direction.DOWN]
+            } else {
+                directions = [Direction.UP, Direction.DOWN,].filter(d => d !== directionToLastItem)
+                additionalDirections = [Direction.LEFT, Direction.RIGHT]
+            }
+            break;
+        case ItemType.TURN:
+            //For TURN item invalid directions are go back and continue strait
+            directions = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT]
+                .filter(d => d !== directionToLastItem && d !== currentDirection)
+            break;
+        case ItemType.UP_DOWN: {
+            if (lastItem.type === ItemType.LEFT_RIGHT && (currentDirection === Direction.LEFT || currentDirection === Direction.RIGHT)) {
+                directions = [Direction.LEFT, Direction.RIGHT].filter(d => d !== directionToLastItem)
+            } else {
+                directions = [Direction.UP, Direction.DOWN].filter(d => d !== directionToLastItem)
+            }
+            break;
         }
         case ItemType.LEFT_RIGHT: {
-            const availableDirections = [Direction.LEFT, Direction.RIGHT].filter(d => d !== invalidDirection)
-            return findNextItemByDirection(itemsMap, currentItem.position, availableDirections)
+            if (lastItem.type === ItemType.UP_DOWN && (currentDirection === Direction.UP || currentDirection === Direction.DOWN)) {
+                directions = [Direction.UP, Direction.DOWN].filter(d => d !== directionToLastItem)
+            } else {
+                directions = [Direction.LEFT, Direction.RIGHT].filter(d => d !== directionToLastItem)
+            }
         }
-        case ItemType.UP_DOWN: {
-            const availableDirections = [Direction.UP, Direction.DOWN].filter(d => d !== invalidDirection)
-            return findNextItemByDirection(itemsMap, currentItem.position, availableDirections)
-        }
+            break;
         //If item is START, END or SPACE, something is wrong
         default:
             throw new LCError(LCErrorType.ERROR)
     }
+    return {directions, additionalDirections}
 }
 
-const findNextItemByDirection = (itemsMap: Item[][], {x, y}: Position, directions: Direction[]): Item => {
+const findNextItemByDirection = (itemsMap: Item[][], position: Position, directions: Direction[], additionalDirections?: Direction[]): Item => {
     const availableMoves: Item[] = [];
+    const {x, y} = position
 
     if (directions.some(d => d === Direction.UP) && isValidMove(itemsMap, x, y - 1)) {
         console.log('Direction.UP')
@@ -104,12 +129,11 @@ const findNextItemByDirection = (itemsMap: Item[][], {x, y}: Position, direction
     }
 
     if (!availableMoves.length) {
-        throw new LCError(LCErrorType.BROKEN_PATH)
-    }
-
-    if (availableMoves.length !== 1) {
-        throw new LCError(LCErrorType.MULTIPLE_PATHS)
-
+        if (additionalDirections?.length) {
+            availableMoves.push(findNextItemByDirection(itemsMap, position, additionalDirections))
+        } else {
+            throw new LCError(LCErrorType.BROKEN_PATH)
+        }
     }
 
     return availableMoves[0]
@@ -129,8 +153,6 @@ const getDirection = (firstPosition: Position, secondPosition: Position): Direct
     const xDiff = firstPosition.x - secondPosition.x
     const yDiff = firstPosition.y - secondPosition.y
 
-    // console.log("currentItem.position lastItem.position", currentItem.position, lastItem.position)
-    // console.log("xDiff yDiff", xDiff, yDiff)
     if (xDiff !== 0 && yDiff === 0) {
         if (xDiff === 1) return Direction.LEFT
         if (xDiff === -1) return Direction.RIGHT

@@ -14,18 +14,27 @@ export const collectLettersAndPath = (map: string[]): CollectLettersAndPathResul
     let currentItem = startItem
     const items: Item[] = [currentItem]
 
-    console.log("start item", currentItem)
 
     while (currentItem.type != ItemType.END) {
         const nextItem = findNextItem(itemsMap, currentItem, lastItem)
-        console.log("nextItem", nextItem)
         lastItem = currentItem
         currentItem = nextItem
         items.push(currentItem)
+        console.log("path", items.map(i => i.value).join(""))
     }
+    let collectedLetters = ''
+    let path = ""
+
+    items.forEach((item, index) => {
+        if (item.type === ItemType.CHARACTER && items.indexOf(item) === index) {
+            collectedLetters += item.value;
+        }
+        path += item.value;
+    })
+
     return {
-        collectedLetters: items.filter(i => i.type === ItemType.CHARACTER).map(i => i.value).join(""),
-        path: items.map(i => i.value).join("")
+        collectedLetters,
+        path
     };
 
 }
