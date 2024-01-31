@@ -2,7 +2,6 @@ import {LCError} from "./domain/LCError";
 
 import {collectLettersAndPath} from './Map';
 
-// Example usage:
 const map: string[] = [
     "@---A---+",
     "        |",

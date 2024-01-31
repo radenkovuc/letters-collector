@@ -1,7 +1,7 @@
 import {ItemType} from "./domain/ItemType";
 import {Item} from "./domain/Item";
 
-import {findNextItem, initMap} from "./services/mappers/Map";
+import {findNextItemOnMap, getCollectedLetters, initMap} from "./services/Map";
 
 interface CollectLettersAndPathResult {
     collectedLetters: string,
@@ -10,33 +10,23 @@ interface CollectLettersAndPathResult {
 
 export const collectLettersAndPath = (map: string[]): CollectLettersAndPathResult => {
     const {itemsMap, startItem} = initMap(map)
-    let lastItem = null
+    let lastItem = undefined
     let currentItem = startItem
-    const items: Item[] = [currentItem]
-
+    const collectedItems: Item[] = [currentItem]
 
     while (currentItem.type != ItemType.END) {
-        const nextItem = findNextItem(itemsMap, currentItem, lastItem)
+        const nextItem = findNextItemOnMap(itemsMap, currentItem, lastItem)
+        collectedItems.push(nextItem)
         lastItem = currentItem
         currentItem = nextItem
-        items.push(currentItem)
-        console.log("path", items.map(i => i.value).join(""))
     }
-    let collectedLetters = ''
-    let path = ""
-
-    items.forEach((item, index) => {
-        if (item.type === ItemType.CHARACTER && items.indexOf(item) === index) {
-            collectedLetters += item.value;
-        }
-        path += item.value;
-    })
 
     return {
-        collectedLetters,
-        path
+        collectedLetters: getCollectedLetters(collectedItems),
+        path: collectedItems.map(i => i.value).join('')
     };
-
 }
+
+
 
 
