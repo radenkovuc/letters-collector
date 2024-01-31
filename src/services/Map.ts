@@ -60,22 +60,18 @@ const findNextItemByDirection = (itemsMap: Item[][], position: Position, directi
     const {x, y} = position
 
     if (directions.some(d => d === Direction.UP) && isValidMove(itemsMap, x, y - 1)) {
-        console.log('Direction.UP')
         availableMoves.push(itemsMap[y - 1][x])
     }
 
     if (directions.some(d => d === Direction.DOWN) && isValidMove(itemsMap, x, y + 1)) {
-        console.log('Direction.DOWN')
         availableMoves.push(itemsMap[y + 1][x])
     }
 
     if (directions.some(d => d === Direction.LEFT) && isValidMove(itemsMap, x - 1, y)) {
-        console.log('Direction.LEFT')
         availableMoves.push(itemsMap[y][x - 1])
     }
 
     if (directions.some(d => d === Direction.RIGHT) && isValidMove(itemsMap, x + 1, y)) {
-        console.log('Direction.RIGHT')
         availableMoves.push(itemsMap[y][x + 1])
     }
 
